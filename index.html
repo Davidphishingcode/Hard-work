@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>For You, እድል</title>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Cinzel:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* መሰረታዊ ማስተካከያዎች */
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #0a0a0a;
+            font-family: 'Cinzel', serif;
+        }
+
+        /* ----- የይለፍ ቃል ገፅ (Login Screen) ----- */
+        #login-screen {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle, #2a0810, #000000);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            transition: opacity 1.5s ease-in-out;
+        }
+
+        .login-box {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), inset 0 0 15px rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            text-align: center;
+            color: #fff;
+        }
+
+        .login-box h2 {
+            font-family: 'Dancing Script', cursive;
+            font-size: 2.5rem;
+            color: #ff4d6d;
+            margin-bottom: 20px;
+            text-shadow: 0 0 10px rgba(255, 77, 109, 0.5);
+        }
+
+        .login-box input {
+            padding: 12px;
+            font-size: 18px;
+            border: 2px solid #ff4d6d;
+            border-radius: 8px;
+            background: rgba(0,0,0,0.3);
+            color: #fff;
+            text-align: center;
+            outline: none;
+            letter-spacing: 5px;
+            transition: 0.3s;
+        }
+
+        .login-box input:focus {
+            box-shadow: 0 0 15px #ff4d6d;
+        }
+
+        .login-box button {
+            margin-top: 20px;
+            padding: 10px 30px;
+            font-size: 16px;
+            color: #fff;
+            background: #ff4d6d;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.3s;
+            box-shadow: 0 5px 15px rgba(255, 77, 109, 0.4);
+        }
+
+        .login-box button:hover {
+            background: #ff1e4d;
+            transform: translateY(-2px);
+        }
+
+        #error-msg {
+            color: #ff1e4d;
+            margin-top: 15px;
+            font-size: 14px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        /* ----- ዋናው ገፅ (Main Content) ----- */
+        #main-content {
+            display: none; /* Initially hidden */
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+        }
+
+        /* የፎቶዎች አኒሜሽን (Background Slideshow) */
+        .slideshow {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 1;
+        }
+
+        .slide {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-size: cover;
+            background-position: center;
+            opacity: 0;
+            transform: scale(1.1);
+            transition: opacity 2s ease-in-out, transform 4s ease-in-out;
+        }
+
+        .slide.active {
+            opacity: 0.4; /* ፎቶዎቹ ከጀርባ ደብዘዝ ብለው እንዲታዩ */
+            transform: scale(1);
+        }
+
+        /* 3D ቪዥዋል ማሳመሪያ (Dark Overlay for depth) */
+        .overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.8) 100%);
+            z-index: 2;
+        }
+
+        /* ----- ተንሳፋፊ ትናንሽ ልቦች ----- */
+        .floating-heart {
+            position: absolute;
+            bottom: -50px;
+            color: #ff4d6d;
+            font-size: 20px;
+            opacity: 0;
+            z-index: 3;
+            filter: drop-shadow(0 0 5px #ff4d6d);
+            animation: floatUp 6s linear infinite;
+        }
+
+        @keyframes floatUp {
+            0% { transform: translateY(0) scale(0.5); opacity: 0; }
+            20% { opacity: 0.8; }
+            100% { transform: translateY(-100vh) scale(1.5); opacity: 0; }
+        }
+
+        /* ----- መሀል ላይ ያለው ትልቁ ልብ እና ፅሁፍ ----- */
+        .center-container {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 10;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .big-heart {
+            position: relative;
+            width: 300px;
+            height: 300px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            animation: pulse 2s infinite;
+        }
+
+        /* የልቡ ቅርፅ በ SVG */
+        .big-heart svg {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            fill: rgba(200, 0, 40, 0.2);
+            stroke: #ff4d6d;
+            stroke-width: 2;
+            filter: drop-shadow(0 0 20px rgba(255, 77, 109, 0.8));
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); filter: drop-shadow(0 0 30px rgba(255, 77, 109, 1)); }
+            100% { transform: scale(1); }
+        }
+
+        /* 'I love You እድል' ፅሁፍ */
+        .love-text {
+            position: relative;
+            font-family: 'Dancing Script', cursive;
+            font-size: 3rem;
+            color: #fff;
+            text-shadow: 0 0 15px #ff4d6d, 0 0 30px #ff4d6d;
+            z-index: 2;
+            margin: 0;
+        }
+
+        /* ----- የልብ ምት መስመር (EKG Line) ----- */
+        .ekg-container {
+            position: absolute;
+            bottom: 40px; /* በልቡ ውስጥ ወደ ታች እንዲሆን */
+            width: 80%;
+            height: 50px;
+            z-index: 2;
+        }
+
+        .ekg-line {
+            fill: none;
+            stroke: #fff;
+            stroke-width: 3;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            filter: drop-shadow(0 0 5px #fff);
+            stroke-dasharray: 1000;
+            stroke-dashoffset: 1000;
+            animation: heartbeat 3s linear infinite;
+        }
+
+        @keyframes heartbeat {
+            0% { stroke-dashoffset: 1000; }
+            50% { stroke-dashoffset: 0; }
+            100% { stroke-dashoffset: -1000; }
+        }
+
+        /* ----- አጭር የፍቅር ጥቅስ ----- */
+        .quote {
+            margin-top: 40px;
+            color: #f8a5c2;
+            font-style: italic;
+            font-size: 1.2rem;
+            max-width: 600px;
+            text-shadow: 0 2px 5px rgba(0,0,0,0.8);
+            opacity: 0;
+            animation: fadeInQuote 3s ease-in-out forwards;
+            animation-delay: 2s; /* ከገቡ ከ2 ሰከንድ በኋላ እንዲታይ */
+        }
+
+        @keyframes fadeInQuote {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+    </style>
+</head>
+<body>
+
+    <div id="login-screen">
+        <div class="login-box">
+            <h2>Only for You</h2>
+            <input type="password" id="password" placeholder="Enter Code" maxlength="4">
+            <br>
+            <button onclick="checkPassword()">Unlock My Heart</button>
+            <p id="error-msg">Incorrect Password. Try again.</p>
+        </div>
+    </div>
+
+    <div id="main-content">
+        <audio id="bgMusic" src="Song.MP3" loop preload="auto"></audio>
+
+        <div class="slideshow">
+            <div class="slide active" style="background-image: url('25757.jpg');"></div>
+            <div class="slide" style="background-image: url('25754.jpg');"></div>
+            <div class="slide" style="background-image: url('25756.jpg');"></div>
+        </div>
+        
+        <div class="overlay"></div>
+        
+        <div id="floating-hearts-container"></div>
+
+        <div class="center-container">
+            <div class="big-heart">
+                <svg viewBox="0 0 32 29.6">
+                    <path d="M23.6,0c-3.4,0-6.3,2.7-7.6,5.6C14.7,2.7,11.8,0,8.4,0C3.8,0,0,3.8,0,8.4c0,9.4,9.5,11.9,16,21.2
+                    c6.1-9.3,16-12.1,16-21.2C32,3.8,28.2,0,23.6,0z"/>
+                </svg>
+                
+                <div style="position: absolute; display: flex; flex-direction: column; align-items: center; width: 100%;">
+                    <h1 class="love-text">I love You እድል</h1>
+                    
+                    <div class="ekg-container">
+                        <svg viewBox="0 0 200 50" style="width: 100%; height: 100%;">
+                            <path class="ekg-line" d="M0,25 L50,25 L60,10 L70,40 L80,25 L120,25 L130,5 L145,45 L155,25 L200,25" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <p class="quote">"In a sea of people, my eyes will always search for you. You are my today and all of my tomorrows."</p>
+        </div>
+    </div>
+
+    <script>
+        function checkPassword() {
+            const passInput = document.getElementById("password").value;
+            const errorMsg = document.getElementById("error-msg");
+            const loginScreen = document.getElementById("login-screen");
+            const mainContent = document.getElementById("main-content");
+            const bgMusic = document.getElementById("bgMusic");
+
+            if (passInput === "2531") {
+                // ትክክል ከሆነ - Login ስክሪኑን ደብቀው ሙዚቃውን ይጀምራል
+                errorMsg.style.opacity = "0";
+                loginScreen.style.opacity = "0";
+                
+                setTimeout(() => {
+                    loginScreen.style.display = "none";
+                    mainContent.style.display = "block";
+                    
+                    // ድምፁን ማጫወት
+                    bgMusic.play().catch(error => console.log("Audio play prevented by browser policy"));
+                    
+                    // ፎቶ መቀያየሪያውን እና ትናንሽ ልቦችን ማስጀመር
+                    startSlideshow();
+                    createHearts();
+                }, 1500); // 1.5 ሰከንድ የመግቢያ አኒሜሽን
+
+            } else {
+                // ስህተት ከሆነ
+                errorMsg.style.opacity = "1";
+            }
+        }
+
+        // የፎቶዎች መቀያየሪያ አኒሜሽን
+        function startSlideshow() {
+            const slides = document.querySelectorAll(".slide");
+            let currentSlide = 0;
+
+            setInterval(() => {
+                slides[currentSlide].classList.remove("active");
+                currentSlide = (currentSlide + 1) % slides.length;
+                slides[currentSlide].classList.add("active");
+            }, 5000); // በየ 5 ሰከንዱ ይቀየራል
+        }
+
+        // ተንሳፋፊ የሚያንፀባርቁ ልቦችን መፍጠሪያ
+        function createHearts() {
+            const container = document.getElementById("floating-hearts-container");
+            
+            setInterval(() => {
+                const heart = document.createElement("div");
+                heart.innerHTML = "❤";
+                heart.classList.add("floating-heart");
+                
+                // በተለያየ ቦታ እና መጠን እንዲወጡ ማድረጊያ
+                heart.style.left = Math.random() * 100 + "vw";
+                heart.style.fontSize = (Math.random() * 20 + 10) + "px";
+                heart.style.animationDuration = (Math.random() * 3 + 4) + "s"; // ከ4 እስከ 7 ሰከንድ
+                
+                container.appendChild(heart);
+                
+                // ከ 7 ሰከንድ በኋላ ከሲስተሙ ማጥፋት (memory እንዳይበላ)
+                setTimeout(() => {
+                    heart.remove();
+                }, 7000);
+            }, 400); // በየ 0.4 ሰከንዱ አዲስ ልብ ይፈጠራል
+        }
+    </script>
+</body>
+</html>
